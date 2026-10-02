@@ -35,7 +35,7 @@ Each Discord server's data is completely separate. If other people install the b
 
 ## Running it
 
-You need Node.js 22.13 or newer. There is no native build step: storage uses Node's built-in SQLite.
+The easiest way is Docker. The bot only makes outgoing connections to Discord, so there are no ports to open or forward.
 
 1. **Create the bot.** Go to <https://discord.com/developers/applications>, click **New Application**, open **Bot** and copy the token (**Reset Token**). The bot needs no privileged intents.
 2. **Invite it to your server.** Replace `YOUR_CLIENT_ID` (the Application ID on the **General Information** page) in this link:
@@ -43,17 +43,43 @@ You need Node.js 22.13 or newer. There is no native build step: storage uses Nod
    https://discord.com/oauth2/authorize?client_id=YOUR_CLIENT_ID&scope=bot+applications.commands&permissions=117760
    ```
    That grants View Channel, Send Messages, Embed Links, Attach Files and Read Message History, and nothing else.
-3. **Configure and start it.**
+3. **Configure it.**
    ```sh
-   npm install
-   cp .env.example .env        # fill in DISCORD_TOKEN and DISCORD_CLIENT_ID
-   npm run deploy-commands     # registers the slash commands
-   npm start
+   cp .env.example .env    # fill in DISCORD_TOKEN and DISCORD_CLIENT_ID
    ```
-   While testing, set `DEV_GUILD_ID` to your server's ID so commands show up instantly. Without it they're registered globally, which can take a while to appear but works in every server the bot joins.
-4. **In Discord:** run `/setup channel:#fitness timezone:America/Chicago`.
+   If the bot is just for your server, also set `DEV_GUILD_ID` to your server's ID (right-click the server icon → **Copy Server ID**, with Developer Mode on in Discord's Advanced settings). Commands then update instantly. Leave it empty to register commands globally, which is what you want once other servers install it. Global changes can take a while to appear.
+4. **Start it.**
+   ```sh
+   docker compose up -d --build
+   docker compose logs -f   # should say "Logged in as ..."
+   ```
+   Slash commands are registered every time the container starts, so there's no separate deploy step.
+5. **In Discord:** run `/setup channel:#fitness timezone:America/Chicago`.
 
-The bot has to keep running for reminders and weekly results, so host it somewhere that stays on (a small VPS, a Raspberry Pi, Railway, Fly.io…) and keep `DATABASE_PATH` on persistent storage.
+The machine has to stay on for reminders and weekly results. If it's off over Monday noon, the bot settles any missed weeks when it comes back.
+
+### Updating
+
+```sh
+git pull
+docker compose up -d --build
+```
+
+Your data lives in the `accountabilibuddy_data` Docker volume, so it survives rebuilds. Don't run `docker compose down -v`: the `-v` deletes the volume.
+
+### Backups
+
+Stop the bot first so the database files are consistent, then copy the volume out:
+
+```sh
+docker compose stop
+docker run --rm -v accountabilibuddy_data:/data -v "$PWD/backups:/backup" alpine cp -a /data/. /backup/
+docker compose start
+```
+
+### Without Docker
+
+Install Node.js 22.13 or newer, then run `npm install`, `npm run deploy-commands` and `npm start`. Storage uses Node's built-in SQLite, so there's nothing else to install.
 
 ## Development
 

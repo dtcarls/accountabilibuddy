@@ -1,0 +1,15 @@
+services:
+  bot:
+    build: .
+    container_name: accountabilibuddy
+    restart: unless-stopped
+    init: true
+    env_file: .env
+    environment:
+      # Always use the volume, whatever .env says.
+      DATABASE_PATH: /app/data/accountabilibuddy.db
+    volumes:
+      - data:/app/data
+
+volumes:
+  data:

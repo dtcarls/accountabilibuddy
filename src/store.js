@@ -71,6 +71,10 @@ export class Store {
     this.db.exec(SCHEMA);
   }
 
+  close() {
+    this.db.close();
+  }
+
   transaction(fn) {
     this.db.exec('BEGIN');
     try {

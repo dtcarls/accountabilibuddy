@@ -41,4 +41,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
+// Docker sends SIGTERM on stop; close the database cleanly before exiting.
+for (const signal of ['SIGTERM', 'SIGINT']) {
+  process.once(signal, async () => {
+    console.log(`Received ${signal}, shutting down`);
+    await client.destroy();
+    store.close();
+    process.exit(0);
+  });
+}
+
 client.login(token);
