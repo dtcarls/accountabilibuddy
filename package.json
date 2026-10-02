@@ -1,0 +1,19 @@
+{
+  "name": "accountabilibuddy",
+  "version": "0.1.0",
+  "description": "A Discord bot that keeps your server accountable for working out: proof check-ins, buddies, stakes, RPG levels and a streak heatmap.",
+  "type": "module",
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning src/index.js",
+    "deploy-commands": "node --env-file-if-exists=.env --disable-warning=ExperimentalWarning src/deploy-commands.js",
+    "test": "node --disable-warning=ExperimentalWarning --test"
+  },
+  "dependencies": {
+    "discord.js": "^14.27.0",
+    "luxon": "^3.7.2"
+  }
+}
